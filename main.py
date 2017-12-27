@@ -221,6 +221,7 @@ def learn(env,
         NET_COPY_STEP,
         OBSERVE,
         TRAIN_FREQ,
+        FRAME_PER_ACTION,
         MODELPATH,
         DATAPATH
         ):
@@ -265,15 +266,21 @@ def learn(env,
         a = (EPS_START - EPS_END)
         b = (EXPLO_FRAC - max(0, time_step - OBSERVE))
         threshold = EPS_END + max(0, a * b / EXPLO_FRAC)
-
-        if prob <= threshold:
-            action_index = np.random.randint(ACTION_NUM)
-            action_button = action_space[action_index][0] # {int}
-            action_onehot = action_space[action_index][1] # {Tensor}
-        else:
+        if time_step % FRAME_PER_ACTION ==0:
+            '''
+            if prob <= threshold:
+                action_index = np.random.randint(ACTION_NUM)
+                action_button = action_space[action_index][0] # {int}
+                action_onehot = action_space[action_index][1] # {Tensor}
+            else:
+                action_button, action_onehot = value_net.select_action(obs4)
+            '''
             action_button, action_onehot = value_net.select_action(obs4)
+        else:
+            action_button=1
         ### do one step ###
         action=action_meaning[action_button]
+        #print(action)
         obs_next, reward, done = env.frame_step(action)
         #obs_next = ob_process(obs_next)
         #obs4_next = torch.cat(([obs4[1:, :, :],obs_next]),dim=0)
@@ -351,6 +358,7 @@ if __name__=='__main__':
         NET_COPY_STEP=100,#10000,
         OBSERVE=100,#50000,
         TRAIN_FREQ=1,
+        FRAME_PER_ACTION=1,
         MODELPATH='./data_save/dqn/param.pt',
         DATAPATH='./data_save/dqn/'
         )
